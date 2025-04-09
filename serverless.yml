@@ -34,6 +34,19 @@ functions:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
+  getOrders:
+    handler: lambdas/getOrders/handler.getOrders
+    events:
+      - http:
+          path: /get-orders
+          method: get
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
+
 resources:
   Resources:
     OrdersTable:

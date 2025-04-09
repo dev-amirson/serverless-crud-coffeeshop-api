@@ -7,47 +7,65 @@ body {
   margin: 0;
   padding: 20px;
 }
+
 img {
   width: 300px;
   margin-bottom: 20px;
 }
+
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  gap: 20px;
+}
+
+/* Left column: Form */
 form {
   background: white;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
+  width: 30%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
+
 label {
   display: block;
   margin-top: 10px;
   font-weight: bold;
 }
+
 input[type="text"],
 input[type="number"] {
-  width: 100%;
+  width: -webkit-fill-available;
   padding: 8px;
   margin-top: 4px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
 .coffee-logo {
   width: 50px;
   height: auto;
 }
+
 .coffee-option {
   display: flex;
   align-items: center;
   margin-top: 10px;
 }
+
 .coffee-option input[type="checkbox"] {
   margin-right: 10px;
 }
+
 .coffee-option input[type="number"] {
   width: 60px;
   margin-left: auto;
 }
+
 button {
   margin-top: 20px;
   width: 100%;
@@ -60,19 +78,64 @@ button {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 button.enabled {
   opacity: 1;
   cursor: pointer;
 }
+
 .success {
   color: green;
   margin-top: 15px;
   font-weight: bold;
   text-align: center;
 }
+
 .failure {
   color: rgb(231, 6, 6);
   margin-top: 15px;
   font-weight: bold;
   text-align: center;
+}
+
+/* Right column: Orders Table */
+.orders-section {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.orders-scroll {
+  overflow-y: auto;
+  max-height: 70vh;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+#ordersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#ordersTable th,
+#ordersTable td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+#ordersTable th {
+  background-color: #f4f4f4;
+}
+
+#ordersTable button {
+  padding: 5px 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+#ordersTable button:hover {
+  background-color: #5e5b5b;
 }

@@ -41,7 +41,13 @@ module.exports.placeOrder = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         message: "Order placed successfully",
-        orderId,
+        order: {
+          orderId,
+          name,
+          address,
+          coffeeTypes,
+          createdAt: orderItem.Item.createdAt,
+        },
       }),
     };
   } catch (error) {
