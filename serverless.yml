@@ -7,6 +7,8 @@ provider:
   runtime: nodejs18.x
   region: ${opt:region, 'eu-north-1'}  # Default region can be overridden by CLI
   stage: ${opt:stage, 'local'}  # Default stage can be overridden by CLI
+  environment:
+    DYNAMODB_TABLE: Orders
 
 functions:
   serveUI:
@@ -17,7 +19,44 @@ functions:
           method: get
           cors: true
 
+  placeOrder:
+    handler: lambdas/placeOrder/handler.placeOrder
+    events:
+      - http:
+          path: place-order
+          method: post
+          cors: true
+    environment:
+      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
+
+resources:
+  Resources:
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 plugins:
   - serverless-offline
   - serverless-dotenv-plugin
+
+custom:
+  dynamodb:
+    stages:
+      - local
+    start:
+      noStart: true
