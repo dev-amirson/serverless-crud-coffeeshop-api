@@ -1,0 +1,23 @@
+service: coffee-api
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${opt:region, 'eu-north-1'}  # Default region can be overridden by CLI
+  stage: ${opt:stage, 'local'}  # Default stage can be overridden by CLI
+
+functions:
+  serveUI:
+    handler: lambdas/serveUI/handler.serveUI
+    events:
+      - http:
+          path: '{proxy+}'
+          method: get
+          cors: true
+
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin

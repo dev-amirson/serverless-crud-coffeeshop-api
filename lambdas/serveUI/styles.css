@@ -1,0 +1,78 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f5f3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+img {
+  width: 300px;
+  margin-bottom: 20px;
+}
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.coffee-logo {
+  width: 50px;
+  height: auto;
+}
+.coffee-option {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+.coffee-option input[type="checkbox"] {
+  margin-right: 10px;
+}
+.coffee-option input[type="number"] {
+  width: 60px;
+  margin-left: auto;
+}
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background-color: #6f4e37;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+button.enabled {
+  opacity: 1;
+  cursor: pointer;
+}
+.success {
+  color: green;
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+.failure {
+  color: rgb(231, 6, 6);
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+}
