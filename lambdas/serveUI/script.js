@@ -58,8 +58,9 @@ let editingOrderId = null;
 
 // Handle edit click
 ordersTable.addEventListener("click", async (e) => {
+  const row = e.target.closest("tr");
+
   if (e.target.textContent === "Update") {
-    const row = e.target.closest("tr");
     const name = row.cells[0].textContent;
     const address = row.cells[1].textContent;
     const coffeeDetails = row.cells[2].textContent.split(", ");
@@ -89,6 +90,36 @@ ordersTable.addEventListener("click", async (e) => {
     submitBtn.textContent = "Update Order";
     submitBtn.classList.add("enabled");
     submitBtn.disabled = false;
+  }
+
+  if (e.target.textContent === "Cancel") {
+    const orderId = row.dataset.id;
+    const confirmCancel = confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirmCancel) return;
+
+    try {
+      const response = await fetch("http://localhost:3000/local/cancel-order", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        row.remove();
+        successMsg.textContent = "Order cancelled successfully!";
+        failureMsg.textContent = "";
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      failureMsg.textContent = error.message || "Failed to cancel order.";
+      successMsg.textContent = "";
+      console.error("Cancel error:", error);
+    }
   }
 });
 

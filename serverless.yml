@@ -62,6 +62,21 @@ functions:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
+  cancelOrder:
+      handler: lambdas/cancelOrder/handler.cancelOrder
+      events:
+        - http:
+            path: cancel-order
+            method: delete
+            cors: true
+      environment:
+        DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+      iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DeleteItem
+          Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
+
 resources:
   Resources:
     OrdersTable:
