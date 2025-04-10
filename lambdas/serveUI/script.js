@@ -33,6 +33,7 @@ const fetchOrders = async () => {
     if (response.ok) {
       result.orders.forEach((order) => {
         const row = ordersTable.insertRow();
+        row.dataset.id = order.orderId;
         row.innerHTML = `
           <td>${order.name}</td>
           <td>${order.address}</td>
@@ -53,71 +54,97 @@ const fetchOrders = async () => {
   }
 };
 
-form.addEventListener("input", validateForm);
+let editingOrderId = null;
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Handle edit click
+ordersTable.addEventListener("click", async (e) => {
+  if (e.target.textContent === "Update") {
+    const row = e.target.closest("tr");
+    const name = row.cells[0].textContent;
+    const address = row.cells[1].textContent;
+    const coffeeDetails = row.cells[2].textContent.split(", ");
 
-  // Gather the form data
-  const name = form.name.value.trim();
-  const address = form.address.value.trim();
-  const coffeeOptions = form.querySelectorAll(".coffee-option");
-  const coffeeTypes = [];
+    const coffeeMap = coffeeDetails.reduce((acc, item) => {
+      const [type, qty] = item.split(" | ");
+      acc[type] = qty;
+      return acc;
+    }, {});
 
-  coffeeOptions.forEach((option) => {
-    const checkbox = option.querySelector('input[type="checkbox"]');
-    const qty = option.querySelector('input[type="number"]');
-    if (checkbox.checked && qty.value >= 1) {
-      coffeeTypes.push({
-        type: checkbox.value,
-        quantity: qty.value,
-      });
-    }
-  });
+    document.getElementById("name").value = name;
+    document.getElementById("address").value = address;
 
-  const orderData = {
-    name,
-    address,
-    coffeeTypes,
-  };
-
-  try {
-    const response = await fetch("http://localhost:3000/local/place-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData),
+    document.querySelectorAll(".coffee-option").forEach((option) => {
+      const checkbox = option.querySelector('input[type="checkbox"]');
+      const quantity = option.querySelector('input[type="number"]');
+      if (coffeeMap[checkbox.value]) {
+        checkbox.checked = true;
+        quantity.value = coffeeMap[checkbox.value];
+      } else {
+        checkbox.checked = false;
+        quantity.value = 1;
+      }
     });
 
-    if (response.ok) {
-      successMsg.textContent = `Your order has been placed successfully.`;
-      const result = await response.json();
-      const newOrder = result.order; // Assuming the response includes the new order
-
-      // Append new order to the table
-      const row = ordersTable.insertRow(0);
-      row.innerHTML = `
-        <td>${newOrder.name}</td>
-        <td>${newOrder.address}</td>
-        <td>${newOrder.coffeeTypes
-          .map((coffee) => `${coffee.type} | ${coffee.quantity}`)
-          .join(", ")}</td>
-        <td>
-          <button>Update</button>
-          <button>Cancel</button>
-        </td>
-      `;
-    } else {
-      failureMsg.textContent = `Failed to place order.`;
-    }
-
-    form.reset();
-    submitBtn.disabled = true;
-    submitBtn.classList.remove("enabled");
-  } catch (error) {
-    console.error("Error placing order:", error);
-    successMsg.textContent = "Error placing order";
+    editingOrderId = row.dataset.id;
+    submitBtn.textContent = "Update Order";
+    submitBtn.classList.add("enabled");
+    submitBtn.disabled = false;
   }
 });
+
+// Handle create/edit form submission
+orderForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const coffeeTypes = Array.from(document.querySelectorAll(".coffee-option"))
+    .filter((opt) => opt.querySelector('input[type="checkbox"]').checked)
+    .map((opt) => ({
+      type: opt.querySelector('input[type="checkbox"]').value,
+      quantity: parseInt(opt.querySelector('input[type="number"]').value),
+    }));
+
+  const body = JSON.stringify({ name, address, coffeeTypes });
+
+  const url = editingOrderId
+    ? `http://localhost:3000/local/update-order/${editingOrderId}`
+    : "http://localhost:3000/local/place-order";
+
+  const method = editingOrderId ? "PUT" : "POST";
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      successMsg.textContent = editingOrderId
+        ? "Order Updated Successfully!"
+        : "Order Placed Successfully!";
+      failureMsg.textContent = "";
+      orderForm.reset();
+      editingOrderId = null;
+      submitBtn.textContent = "Place Order";
+      submitBtn.classList.remove("enabled");
+      submitBtn.disabled = true;
+      ordersTable.innerHTML = "";
+      fetchOrders();
+    } else {
+      failureMsg.textContent = result.message;
+      successMsg.textContent = "";
+    }
+  } catch (error) {
+    failureMsg.textContent = "Error submitting order";
+    successMsg.textContent = "";
+    console.error("Error submitting order:", error);
+  }
+});
+form.addEventListener("input", validateForm);
 
 // Fetch and display all orders when the page loads
 fetchOrders();

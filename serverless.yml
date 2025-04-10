@@ -47,6 +47,21 @@ functions:
           - dynamodb:Scan
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
+  updateOrder:
+    handler: lambdas/updateOrder/handler.updateOrder
+    events:
+      - http:
+          path: update-order/{id}
+          method: put
+          cors: true
+    environment:
+      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
+
 resources:
   Resources:
     OrdersTable:
