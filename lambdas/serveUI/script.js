@@ -6,6 +6,17 @@ const ordersTable = document
   .getElementById("ordersTable")
   .getElementsByTagName("tbody")[0];
 
+// Determine the base URL dynamically based on the environment
+const baseURL = (() => {
+  if (window.location.origin.includes("localhost")) {
+    return "http://localhost:3000/local";
+  }
+  // Extract the stage from the current URL path (dev or prod)
+  const pathParts = window.location.pathname.split("/");
+  const stage = pathParts[1] || "dev"; // default to 'dev' if not found
+  return `${window.location.origin}/${stage}`;
+})();
+
 const validateForm = () => {
   const name = form.name.value.trim();
   const address = form.address.value.trim();
@@ -27,7 +38,13 @@ const validateForm = () => {
 
 const fetchOrders = async () => {
   try {
-    const response = await fetch("http://localhost:3000/local/get-orders");
+    const response = await fetch(`${baseURL}/get-orders`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      mode: "cors",
+    });
     const result = await response.json();
 
     if (response.ok) {
@@ -100,7 +117,7 @@ ordersTable.addEventListener("click", async (e) => {
     if (!confirmCancel) return;
 
     try {
-      const response = await fetch("http://localhost:3000/local/cancel-order", {
+      const response = await fetch(`${baseURL}/cancel-order`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
@@ -139,8 +156,8 @@ orderForm.addEventListener("submit", async (e) => {
   const body = JSON.stringify({ name, address, coffeeTypes });
 
   const url = editingOrderId
-    ? `http://localhost:3000/local/update-order/${editingOrderId}`
-    : "http://localhost:3000/local/place-order";
+    ? `${baseURL}/update-order/${editingOrderId}`
+    : `${baseURL}/place-order`;
 
   const method = editingOrderId ? "PUT" : "POST";
 
@@ -149,6 +166,7 @@ orderForm.addEventListener("submit", async (e) => {
       method,
       headers: { "Content-Type": "application/json" },
       body,
+      mode: "cors",
     });
 
     const result = await response.json();

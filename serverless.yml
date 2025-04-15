@@ -5,17 +5,33 @@ frameworkVersion: "3"
 provider:
   name: aws
   runtime: nodejs18.x
-  region: ${opt:region, 'eu-north-1'}  # Default region can be overridden by CLI
-  stage: ${opt:stage, 'local'}  # Default stage can be overridden by CLI
+  region: ${opt:region, 'us-east-1'} # Default region can be overridden by CLI
+  stage: ${opt:stage, 'local'} # Default stage can be overridden by CLI
   environment:
-    DYNAMODB_TABLE: Orders
+    DYNAMODB_TABLE: Orders-${self:provider.stage}
+    API_URL: ${env:API_URL, 'http://localhost:3000/local'} # Fallback value if env var is not set
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:BatchGetItem
+          Resource:
+            - Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:provider.environment.DYNAMODB_TABLE}
+            - Fn::Sub: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:provider.environment.DYNAMODB_TABLE}/index/*
 
 functions:
   serveUI:
     handler: lambdas/serveUI/handler.serveUI
     events:
       - http:
-          path: '{proxy+}'
+          path: "{proxy+}"
           method: get
           cors: true
 
@@ -26,26 +42,14 @@ functions:
           path: place-order
           method: post
           cors: true
-    environment:
-      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:PutItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
   getOrders:
     handler: lambdas/getOrders/handler.getOrders
     events:
       - http:
-          path: /get-orders
+          path: get-orders
           method: get
           cors: true
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:Scan
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
   updateOrder:
     handler: lambdas/updateOrder/handler.updateOrder
@@ -54,28 +58,14 @@ functions:
           path: update-order/{id}
           method: put
           cors: true
-    environment:
-      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:UpdateItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
 
   cancelOrder:
-      handler: lambdas/cancelOrder/handler.cancelOrder
-      events:
-        - http:
-            path: cancel-order
-            method: delete
-            cors: true
-      environment:
-        DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
-      iamRoleStatements:
-        - Effect: Allow
-          Action:
-            - dynamodb:DeleteItem
-          Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}
+    handler: lambdas/cancelOrder/handler.cancelOrder
+    events:
+      - http:
+          path: cancel-order
+          method: delete
+          cors: true
 
 resources:
   Resources:
@@ -89,9 +79,12 @@ resources:
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+        BillingMode: PAY_PER_REQUEST
+
+  Outputs:
+    ApiGatewayUrl:
+      Value: !Sub "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}"
+      Description: "The API Gateway URL"
 
 plugins:
   - serverless-offline

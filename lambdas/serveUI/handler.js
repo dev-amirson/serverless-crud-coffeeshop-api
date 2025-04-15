@@ -15,29 +15,28 @@ module.exports.serveUI = async (event) => {
   } else if (resourcePath === "script.js") {
     filePath = path.join(__dirname, "script.js");
     contentType = "application/javascript";
-  } else if (resourcePath === "coffee-cup.png") {
-    filePath = path.join(__dirname, "coffee-cup.png");
-    contentType = "image/png";
   }
 
   try {
-    // Read the image file as binary (for non-text files)
-    const fileContent =
-      resourcePath === "coffee-cup.png"
-        ? fs.readFileSync(filePath) // For binary content (image)
-        : fs.readFileSync(filePath, "utf8"); // For text-based content
-
+    const fileContent = fs.readFileSync(filePath, "utf8");
     return {
       statusCode: 200,
-      headers: { "Content-Type": contentType },
-      body: fileContent.toString("base64"), // Convert binary data to base64 for images
-      isBase64Encoded: resourcePath === "coffee-cup.png", // Mark as base64 encoded for binary files
+      headers: {
+        "Content-Type": contentType,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Cache-Control": "public, max-age=300",
+      },
+      body: fileContent,
     };
   } catch (error) {
     console.error("Error reading file:", error);
     return {
       statusCode: 404,
-      body: "File not found",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({ message: "File not found" }),
     };
   }
 };

@@ -1,44 +1,50 @@
 const AWS = require("aws-sdk");
+const { getDynamoClient } = require("../../utils/dynamoClient");
 const uuid = require("uuid");
 
-const isLocal = process.env.STAGE === 'local'; // Check if in local environment
-const dynamoDb = new AWS.DynamoDB.DocumentClient({
-  ...(isLocal && {
-    endpoint: "http://localhost:8000", // Local DynamoDB endpoint
-    region: "localhost",
-    accessKeyId: "local",
-    secretAccessKey: "local",
-  }),
-});
+const dynamoDb = getDynamoClient();
 
-
-module.exports.placeOrder = async (event) => {
-  
-  const body = JSON.parse(event.body);
-  console.log("body : ", body)
-  const { name, address, coffeeTypes } = body;
-
-  // Generate a unique order ID
-  const orderId = uuid.v4();
-
-  // Prepare the order item
-  const orderItem = {
-    TableName: process.env.DYNAMODB_TABLE,
-    Item: {
-      orderId,
-      name,
-      address,
-      coffeeTypes, // An array of coffee types and quantities
-      createdAt: new Date().toISOString(),
-    },
-  };
-
+const placeOrder = async (event) => {
   try {
-    // Save the order to DynamoDB
+    const body = JSON.parse(event.body);
+    const { name, address, coffeeTypes } = body;
+
+    if (!name || !address || !coffeeTypes || !Array.isArray(coffeeTypes)) {
+      return {
+        statusCode: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Credentials": true,
+        },
+        body: JSON.stringify({
+          message:
+            "Invalid request. Name, address, and coffeeTypes (array) are required.",
+        }),
+      };
+    }
+
+    const orderId = uuid.v4();
+    const createdAt = new Date().toISOString();
+
+    const orderItem = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Item: {
+        orderId,
+        name,
+        address,
+        coffeeTypes,
+        createdAt,
+      },
+    };
+
     await dynamoDb.put(orderItem).promise();
 
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      },
       body: JSON.stringify({
         message: "Order placed successfully",
         order: {
@@ -46,7 +52,7 @@ module.exports.placeOrder = async (event) => {
           name,
           address,
           coffeeTypes,
-          createdAt: orderItem.Item.createdAt,
+          createdAt,
         },
       }),
     };
@@ -54,7 +60,18 @@ module.exports.placeOrder = async (event) => {
     console.error("Error placing order:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Failed to place order" }),
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      },
+      body: JSON.stringify({
+        message: "Error placing order",
+        error: error.message,
+      }),
     };
   }
+};
+
+module.exports = {
+  placeOrder,
 };

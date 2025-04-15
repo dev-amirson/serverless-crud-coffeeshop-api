@@ -1,14 +1,7 @@
 const AWS = require("aws-sdk");
+const { getDynamoClient } = require("../../utils/dynamoClient");
 
-const isLocal = process.env.STAGE === 'local';
-const dynamoDb = new AWS.DynamoDB.DocumentClient({
-  ...(isLocal && {
-    endpoint: "http://localhost:8000",
-    region: "localhost",
-    accessKeyId: "local",
-    secretAccessKey: "local",
-  }),
-});
+const dynamoDb = getDynamoClient();
 
 module.exports.cancelOrder = async (event) => {
   const { orderId } = JSON.parse(event.body);
@@ -30,7 +23,10 @@ module.exports.cancelOrder = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Order cancelled successfully", orderId }),
+      body: JSON.stringify({
+        message: "Order cancelled successfully",
+        orderId,
+      }),
     };
   } catch (error) {
     console.error("Error cancelling order:", error);
