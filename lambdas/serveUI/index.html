@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coffee Shop Order</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1 class="logo">Coffee Shop</h1>
+
+    <div class="container">
+      <!-- Left Column (Form) -->
+      <form id="orderForm">
+        <label for="name">Customer Name</label>
+        <input type="text" id="name" name="name" required />
+
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required />
+
+        <label>Coffee Types</label>
+        <div class="coffee-option">
+          <input type="checkbox" id="espresso" name="coffee" value="Espresso" />
+          <label for="espresso">Espresso</label>
+          <input type="number" min="1" value="1" placeholder="Qty" />
+        </div>
+        <div class="coffee-option">
+          <input type="checkbox" id="latte" name="coffee" value="Latte" />
+          <label for="latte">Latte</label>
+          <input type="number" min="1" value="1" placeholder="Qty" />
+        </div>
+        <div class="coffee-option">
+          <input
+            type="checkbox"
+            id="cappuccino"
+            name="coffee"
+            value="Cappuccino"
+          />
+          <label for="cappuccino">Cappuccino</label>
+          <input type="number" min="1" value="1" placeholder="Qty" />
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Place Order</button>
+        <div class="success" id="successMsg"></div>
+        <div class="failure" id="failureMsg"></div>
+      </form>
+
+      <!-- Right Column (Orders Table) -->
+      <div class="orders-section">
+        <h2>Current Orders</h2>
+        <div class="orders-scroll">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Order Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Order rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
