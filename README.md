@@ -151,7 +151,7 @@ Access the dev environment at: https://9fjlki43m7.execute-api.us-east-1.amazonaw
 serverless deploy --stage prod
 ```
 
-Access the prod environment at: [Production URL will be displayed after deployment]
+Access the prod environment at: https://feif6huji9.execute-api.us-east-1.amazonaws.com/prod/{proxy+}
 
 ## API Endpoints
 
@@ -169,11 +169,22 @@ The project uses GitHub Actions for continuous integration and deployment:
 - Automatic deployment to prod environment on pull request to `main` branch
 - Manual deployment trigger available through workflow_dispatch
 
+## Dev environment CICD pipeline Screenshot
+
 [![CI/CD Pipeline](/dev-CICD.png)](/dev-CICD.png)
 
 ## Dev environment Application Screenshot
 
 [![Coffee Shop Order Management](/dev-application-ui.png)](/dev-application-ui.png)
+
+
+## Prod environment CICD pipeline Screenshot
+
+[![CI/CD Pipeline](/prod-CICD.png)](/prod-CICD.png)
+
+## Prod environment Application Screenshot
+
+[![Coffee Shop Order Management](/prod-application-ui.png)](/prod-application-ui.png)
 
 ## Security
 
